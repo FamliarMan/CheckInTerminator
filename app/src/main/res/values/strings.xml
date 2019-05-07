@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">CheckInTerminator</string>
+    <string name="app_name">打开终结者</string>
+    <string name="watching">正在监控当前位置是否超出打卡范围</string>
 </resources>

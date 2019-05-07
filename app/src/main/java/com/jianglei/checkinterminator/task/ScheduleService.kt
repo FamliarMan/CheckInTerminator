@@ -1,30 +1,41 @@
 package com.jianglei.checkinterminator.task
 
-import android.app.Service
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
+import com.baidu.mapapi.synchronization.DisplayOptions
+import com.jianglei.checkinterminator.MainActivity
+import com.jianglei.checkinterminator.R
 
 /**
  *@author longyi created on 19-4-30
  */
 class ScheduleService : Service() {
     private lateinit var mLocationClient: LocationClient
-    private val mVibrator = application.getSystemService(Service.VIBRATOR_SERVICE) as Vibrator
+    private lateinit var mVibrator: Vibrator
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreate() {
         super.onCreate()
-//        mapInit()
+//        mVibrator = val
+        mapInit()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startLocationService()
+        return super.onStartCommand(intent, flags, startId)
     }
 
     private fun mapInit() {
@@ -78,5 +89,43 @@ class ScheduleService : Service() {
 
     public fun stopVibrate() {
         mVibrator.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+//        stopVibrate()
+        mLocationClient.stop()
+    }
+
+    public fun startLocationService() {
+
+        val pendingIntent: PendingIntent =
+            Intent(this, MainActivity::class.java).let { notificationIntent ->
+                PendingIntent.getActivity(this, 0, notificationIntent, 0)
+            }
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel("1", "watch", NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+            Notification.Builder(this, "1")
+                .setContentTitle(getText(R.string.app_name))
+                .setContentText(getText(R.string.watching))
+                .setContentIntent(pendingIntent)
+                .setTicker(getText(R.string.app_name))
+                .build()
+        } else {
+            NotificationCompat.Builder(this)
+                .setContentTitle(getText(R.string.app_name))
+                .setContentText(getText(R.string.watching))
+                .setContentIntent(pendingIntent)
+                .setTicker(getText(R.string.app_name))
+                .build()
+        }
+        startForeground(1, notification)
+    }
+
+    private fun isRange() {
     }
 }
