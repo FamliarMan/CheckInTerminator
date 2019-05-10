@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">打开终结者</string>
     <string name="watching">正在监控当前位置是否超出打卡范围</string>
+    <string name="lng_lat">经度：%1$s,纬度：%2$s</string>
+    <string name="start_time">%s开始提醒</string>
+    <string name="already_done">已完成</string>
+    <string name="finish_task">完成任务</string>
 </resources>

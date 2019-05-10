@@ -5,6 +5,7 @@ import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
 
 /**
  *@author longyi created on 19-3-28
@@ -30,7 +31,9 @@ data class TaskRecord(
     var startTime: String,
 
     /**
-     * 星期几生效，用"，"隔开，如星期一，星期二
+     * 星期几生效，用"，"隔开，1,2,3
+     * 1——星期天
+     * 2——星期一
      */
     @ColumnInfo(name = "week")
     var week: String,
@@ -51,7 +54,12 @@ data class TaskRecord(
     /**
      * 上一次完成任务时间
      */
-    var lastDoneTime: Long
+    var lastDoneTime  : Long =1557469433000 ,
+
+    /**
+     * 任务类型，0——进入范围提醒， 1——离开范围提醒
+     */
+    var type: Int
 
 
 ) : Parcelable {
@@ -63,7 +71,8 @@ data class TaskRecord(
         source.readString(),
         source.readString(),
         source.readString(),
-        source.readLong()
+        source.readLong(),
+        source.readInt()
     )
 
     override fun describeContents() = 0
@@ -77,6 +86,7 @@ data class TaskRecord(
         writeString(Lng)
         writeString(Lat)
         writeLong(lastDoneTime)
+        writeInt(type)
     }
 
     companion object {
