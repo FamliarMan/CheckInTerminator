@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+		  android:layout_width="match_parent"
+		  xmlns:tools="http://schemas.android.com/tools"
+		  android:id="@+id/tvType"
+		  android:gravity="right|center_vertical"
+		  android:paddingRight="10dp"
+		  tools:text="上部"
+		  android:textColor="@android:color/holo_blue_dark"
+		  android:layout_height="40dp">
+
+</TextView>

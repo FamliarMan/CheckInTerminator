@@ -13,6 +13,7 @@ import java.util.*
 
 @Entity(tableName = "TaskRecord")
 data class TaskRecord(
+
     @PrimaryKey(autoGenerate = true)
     var id: Int,
 
@@ -22,7 +23,7 @@ data class TaskRecord(
      * 该任务是否激活使用，0不使用，1使用
      */
     @ColumnInfo(name = "enabled")
-    var enabled: Int,
+    var enabled: Int = 1,
 
     /**
      * 任务开始具体时间，如 16:00
@@ -52,9 +53,15 @@ data class TaskRecord(
     var Lat: String,
 
     /**
+     * 具体地址
+     */
+    @ColumnInfo(name = "addr")
+    var addr: String,
+
+    /**
      * 上一次完成任务时间
      */
-    var lastDoneTime  : Long =1557469433000 ,
+    var lastDoneTime: Long = 1557469433000,
 
     /**
      * 任务类型，0——进入范围提醒， 1——离开范围提醒
@@ -67,6 +74,7 @@ data class TaskRecord(
         source.readInt(),
         source.readString(),
         source.readInt(),
+        source.readString(),
         source.readString(),
         source.readString(),
         source.readString(),
@@ -85,6 +93,7 @@ data class TaskRecord(
         writeString(week)
         writeString(Lng)
         writeString(Lat)
+        writeString(addr)
         writeLong(lastDoneTime)
         writeInt(type)
     }
@@ -95,5 +104,14 @@ data class TaskRecord(
             override fun createFromParcel(source: Parcel): TaskRecord = TaskRecord(source)
             override fun newArray(size: Int): Array<TaskRecord?> = arrayOfNulls(size)
         }
+
+        const val TYPE_CHECK_IN = 0
+        const val TYPE_CHECK_OUT = 1
+        //任务跳过
+        const val STATUS_SKIP = 0
+        //任务已完成
+        const val STATUS_DONE = 1
+        //任务等待执行
+        const val STATUS_READY = 2
     }
 }

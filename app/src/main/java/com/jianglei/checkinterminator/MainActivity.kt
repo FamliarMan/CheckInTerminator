@@ -14,7 +14,7 @@ import com.jianglei.checkinterminator.location.LocationSelectActivity
 import com.jianglei.checkinterminator.task.ScheduleService
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +29,11 @@ class MainActivity : AppCompatActivity() {
         btnStop.setOnClickListener {
             val serviceIntent = Intent(this, ScheduleService::class.java)
             stopService(serviceIntent)
+        }
+        btnList.setOnClickListener {
+
+            val intent = Intent(this,TaskListActivity::class.java)
+            startActivity(intent)
         }
     }
 

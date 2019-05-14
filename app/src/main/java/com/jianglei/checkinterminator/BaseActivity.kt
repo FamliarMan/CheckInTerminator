@@ -14,12 +14,12 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     override fun setContentView(layoutResID: Int) {
-        super.setContentView(layoutResID)
+        setSupportActionBar(toolbar)
         LayoutInflater.from(this).inflate(layoutResID, mainLayout, true)
     }
 
     override fun setContentView(view: View?) {
-        super.setContentView(view)
+        setSupportActionBar(toolbar)
         mainLayout.addView(view)
     }
 }

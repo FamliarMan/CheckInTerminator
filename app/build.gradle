@@ -65,6 +65,7 @@ dependencies {
     //加载框
     implementation 'com.kaopiz:kprogresshud:1.0.2'
 
+    implementation "org.jetbrains.anko:anko:0.10.8"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

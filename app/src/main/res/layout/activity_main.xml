@@ -30,4 +30,11 @@
             android:text="关闭服务"
     />
 
+    <Button
+            android:id="@+id/btnList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:text="列表"
+    />
 </LinearLayout>

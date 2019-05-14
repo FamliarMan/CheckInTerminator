@@ -2,12 +2,18 @@ package com.jianglei.checkinterminator
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import com.classic.adapter.BaseAdapterHelper
 import com.classic.adapter.CommonRecyclerAdapter
+import com.jianglei.checkinterminator.util.TaskUtils
 import com.jianglei.girlshow.storage.TaskRecord
 import kotlinx.android.synthetic.main.activity_task_list.*
 import java.util.*
@@ -26,9 +32,20 @@ class TaskListActivity : BaseActivity() {
 
                 if (rvContent.adapter == null) {
                     mTaskAdapter = TaskAdapter(t)
+                    mTaskAdapter.setOnItemClickListener(object : CommonRecyclerAdapter.OnItemClickListener {
+                        override fun onItemClick(viewHolder: RecyclerView.ViewHolder?, view: View?, position: Int) {
+                            val intent = Intent(this@TaskListActivity, TaskEditActivity::class.java)
+                            intent.putExtra("task", mTaskAdapter.getItem(position))
+                            startActivity(intent)
+                        }
+                    })
                     rvContent.adapter = mTaskAdapter
                 } else {
-                    mTaskAdapter.notifyDataSetChanged()
+                    if (t == null) {
+                        mTaskAdapter.clear()
+                    } else {
+                        mTaskAdapter.replaceAll(t, true)
+                    }
                 }
             }
         })
@@ -43,8 +60,11 @@ class TaskListActivity : BaseActivity() {
             helper.setText(R.id.tvName, item.name)
             helper.setText(R.id.tvStartTime, item.startTime)
             val btnStatus = helper.getView<Button>(R.id.btnStatus)
-            val isTaskDone = isTaskDone(item)
-            if (isTaskDone) {
+            val taskStatus = TaskUtils.getTaskStatus(item)
+            if (taskStatus == TaskRecord.STATUS_SKIP) {
+                btnStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
+                btnStatus.text = getString(R.string.skip)
+            } else if (taskStatus == TaskRecord.STATUS_DONE) {
                 btnStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
                 btnStatus.text = getString(R.string.already_done)
             } else {
@@ -52,34 +72,29 @@ class TaskListActivity : BaseActivity() {
                 btnStatus.text = getString(R.string.finish_task)
             }
             btnStatus.setOnClickListener {
-                if (!isTaskDone) {
+                if (taskStatus == TaskRecord.STATUS_READY) {
+                    item.lastDoneTime = System.currentTimeMillis()
                     model.updateTask(item)
                 }
             }
         }
 
-        /**
-         * 判断任务是否完成
-         */
-        private fun isTaskDone(taskRecord: TaskRecord): Boolean {
-            val finishDate = Date(taskRecord.lastDoneTime)
-            val now = Date()
-            val finishCalendar = Calendar.getInstance()
-            finishCalendar.time = finishDate
-            val nowCalendar = Calendar.getInstance()
-            nowCalendar.time = now
-            return if (nowCalendar.get(Calendar.DAY_OF_MONTH) - finishCalendar.get(Calendar.DAY_OF_MONTH) >= 1) {
-                //离上次任务完成已经过了至少一天
-                val week = nowCalendar.get(Calendar.DAY_OF_WEEK)
-                val validDays: List<Int> = taskRecord.week.split(",")
-                    .map {
-                        Integer.valueOf(it)
-                    }
-                validDays.contains(week)
-            } else {
-                true
-            }
-        }
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.add_task, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item == null) {
+            return super.onOptionsItemSelected(item)
+        }
+        if (item.itemId == R.id.add_task) {
+            val intent = Intent(this@TaskListActivity, TaskEditActivity::class.java)
+            startActivity(intent)
+
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

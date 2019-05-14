@@ -1,8 +1,12 @@
 package com.jianglei.checkinterminator.location
 
+import android.app.Activity
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.jianglei.checkinterminator.R
@@ -10,16 +14,46 @@ import com.baidu.location.LocationClientOption
 import com.baidu.location.LocationClient
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
+import com.jianglei.checkinterminator.BaseActivity
+import com.jianglei.checkinterminator.util.DialogUtils
 import kotlinx.android.synthetic.main.activity_location_select.*
 
 
-class LocationSelectActivity : AppCompatActivity() {
+class LocationSelectActivity : BaseActivity() {
+
 
     private lateinit var mLocationClient: LocationClient
+    private var addr: String? = null
+    private var lat: Double? = null
+    private var lng: Double? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location_select)
         mapInit()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.confirm, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item == null) {
+            return super.onOptionsItemSelected(item)
+        }
+        if (item.itemId == R.id.menuConfirm) {
+            if (addr.isNullOrBlank()) {
+                DialogUtils.showTipDialog(this, getString(R.string.locate_not_finished))
+            } else {
+                val intent = Intent()
+                intent.putExtra("addr", addr)
+                intent.putExtra("lat", lat)
+                intent.putExtra("lng", lng)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun mapInit() {
@@ -56,6 +90,10 @@ class LocationSelectActivity : AppCompatActivity() {
                 val u = MapStatusUpdateFactory.newLatLngZoom(ll, f - 2)
 //MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll,m);//设置缩放比例
                 mapView.map.animateMapStatus(u)//屏幕显示地图时以指定LatLng为中心
+
+                addr = location.addrStr
+                lat = location.latitude
+                lng = location.longitude
 
                 Log.d(
                     "longyi",
