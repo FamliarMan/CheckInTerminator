@@ -38,7 +38,8 @@ class TaskEditActivity : BaseActivity() {
                 0, "",
                 1, "", "", "", "", "",
                 1557469433000,
-                TaskRecord.TYPE_CHECK_IN
+                TaskRecord.TYPE_CHECK_IN,
+                50
             )
         } else {
             isAdd = false
@@ -91,6 +92,7 @@ class TaskEditActivity : BaseActivity() {
         tvTime.text = taskRecord!!.startTime
         tvWeek.text = DateUtil.getDayIntStr(taskRecord!!.week)
         tvAddr.text = taskRecord!!.addr
+        etRadius.setText(taskRecord!!.radius.toString())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -153,6 +155,7 @@ class TaskEditActivity : BaseActivity() {
         taskRecord!!.name = etName.text.toString()
         taskRecord!!.startTime = tvTime.text.toString()
         taskRecord!!.addr = tvAddr.text.toString()
+        taskRecord!!.radius = etRadius.text.toString().toInt()
         if (isAdd) {
             taskViewModel.addTask(taskRecord!!)
         } else {
@@ -167,6 +170,7 @@ class TaskEditActivity : BaseActivity() {
             || tvTime.text.isNullOrBlank()
             || tvWeek.text.isNullOrBlank()
             || tvAddr.text.isNullOrBlank()
+            || etRadius.text.isNullOrBlank()
         ) {
             DialogUtils.showTipDialog(this, getString(R.string.content_empty))
             return false

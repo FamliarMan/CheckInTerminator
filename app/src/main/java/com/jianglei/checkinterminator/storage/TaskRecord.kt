@@ -61,12 +61,19 @@ data class TaskRecord(
     /**
      * 上一次完成任务时间
      */
+    @ColumnInfo(name = "lastDoneTime")
     var lastDoneTime: Long = 1557469433000,
 
     /**
      * 任务类型，0——进入范围提醒， 1——离开范围提醒
      */
-    var type: Int
+    @ColumnInfo(name = "type")
+    var type: Int,
+    /**
+     * 有效半径
+     */
+    @ColumnInfo(name = "radius")
+    var radius: Int
 
 
 ) : Parcelable {
@@ -80,6 +87,7 @@ data class TaskRecord(
         source.readString(),
         source.readString(),
         source.readLong(),
+        source.readInt(),
         source.readInt()
     )
 
@@ -96,6 +104,7 @@ data class TaskRecord(
         writeString(addr)
         writeLong(lastDoneTime)
         writeInt(type)
+        writeInt(radius)
     }
 
     companion object {

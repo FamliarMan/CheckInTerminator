@@ -48,8 +48,12 @@ class DateUtil {
         /**
          * 将"1,2,3"转成 [星期日，星期以，星期二]
          */
-        fun getDayIntStr(weeks:String): String {
-            val dayInt = weeks.split(",")
+        fun getDayIntStr(weeks: String): String {
+            val days = weeks.split(",")
+            if (days.size == 1) {
+                return ""
+            }
+            val dayInt = days
                 .map {
                     it.toInt()
                 }

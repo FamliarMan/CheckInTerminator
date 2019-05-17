@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">打开终结者</string>
+    <string name="app_name">打卡终结者</string>
     <string name="watching">正在监控当前位置是否超出打卡范围</string>
     <string name="lng_lat">经度：%1$s,纬度：%2$s</string>
     <string name="start_time">%s开始提醒</string>
@@ -12,6 +12,7 @@
     <string name="dialog_tip">提示</string>
     <string name="cancel">取消</string>
     <string name="name">任务名称：</string>
+    <string name="distance">打卡距离(m):</string>
     <string name="task_type">任务类型</string>
     <string name="remind_time">提醒时间：</string>
     <string name="remind_day">生效日期：</string>

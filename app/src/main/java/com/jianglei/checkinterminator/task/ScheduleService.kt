@@ -13,9 +13,14 @@ import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
+import com.baidu.mapapi.model.LatLng
+import com.baidu.mapapi.model.inner.Point
 import com.baidu.mapapi.synchronization.DisplayOptions
+import com.baidu.mapapi.utils.SpatialRelationUtil
 import com.jianglei.checkinterminator.MainActivity
 import com.jianglei.checkinterminator.R
+import com.jianglei.checkinterminator.util.TaskUtils
+import com.jianglei.girlshow.storage.TaskRecord
 
 /**
  *@author longyi created on 19-4-30
@@ -126,6 +131,35 @@ class ScheduleService : Service() {
         startForeground(1, notification)
     }
 
-    private fun isRange() {
+    /**
+     * 判断当前位置是否在任务规定范围内
+     */
+    private fun isRange(task: TaskRecord, curLatlng: LatLng): Boolean {
+        val center = LatLng(task.Lat.toDouble(), task.Lng.toDouble())
+        return SpatialRelationUtil.isCircleContainsPoint(center, task.radius, curLatlng)
+    }
+
+    /**
+     * 检查是否有任务需要执行
+     */
+    private fun checkTask(tasks: List<TaskRecord>, curLatlng: LatLng):
+                (checkInTasks:List<TaskRecord>,checkOutTasks:List<TaskRecord>){
+        val checkInTasks = mutableListOf<TaskRecord>()
+        val checkOutTasks = mutableListOf<TaskRecord>()
+        for (task in tasks) {
+            val taskStatus = TaskUtils.getTaskStatus(task)
+            if (taskStatus == TaskRecord.STATUS_READY) {
+                val isRange = isRange(task, curLatlng)
+                if (isRange && task.type == TaskRecord.TYPE_CHECK_IN) {
+                    //进入打卡范围
+                    checkInTasks.add(task)
+                } else if (!isRange && task.type == TaskRecord.TYPE_CHECK_OUT) {
+                    //离开打卡范围
+                    checkOutTasks.add(task)
+                }
+
+            }
+        }
+        return (checkInTasks,checkOutTasks)
     }
 }
