@@ -120,7 +120,9 @@ data class TaskRecord(
         const val STATUS_SKIP = 0
         //任务已完成
         const val STATUS_DONE = 1
-        //任务等待执行
+        //任务提醒时间还没到等待执行
         const val STATUS_READY = 2
+        //任务激活中
+        const val STATUS_ACTIVIE = 3
     }
 }

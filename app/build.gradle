@@ -10,7 +10,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.jianglei.checkinterminator"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -65,6 +65,8 @@ dependencies {
     //加载框
     implementation 'com.kaopiz:kprogresshud:1.0.2'
 
+
+    implementation 'com.jianglei:smoothatyoperator:1.0'
     implementation "org.jetbrains.anko:anko:0.10.8"
 
     testImplementation 'junit:junit:4.12'

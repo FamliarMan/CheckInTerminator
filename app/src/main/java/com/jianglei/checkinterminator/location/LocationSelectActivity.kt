@@ -1,5 +1,6 @@
 package com.jianglei.checkinterminator.location
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
@@ -16,6 +17,8 @@ import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
 import com.jianglei.checkinterminator.BaseActivity
 import com.jianglei.checkinterminator.util.DialogUtils
+import com.jianglei.smoothatyoperator.OnPermissionResultListener
+import com.jianglei.smoothatyoperator.SmoothAtyOperator
 import kotlinx.android.synthetic.main.activity_location_select.*
 
 
@@ -103,7 +106,19 @@ class LocationSelectActivity : BaseActivity() {
             }
         })
 
-        mLocationClient.start()
+        SmoothAtyOperator.startPermission(this)
+            .addPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+            .addPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+            .build()
+            .request(object:OnPermissionResultListener{
+                override fun onGranted(permissions: Array<out String>?) {
+                    mLocationClient.start()
+                }
+
+                override fun onDenied(permissions: Array<out String>?) {
+                    DialogUtils.showTipDialog(this@LocationSelectActivity,getString(R.string.no_permission))
+                }
+            })
     }
 
     override fun onResume() {

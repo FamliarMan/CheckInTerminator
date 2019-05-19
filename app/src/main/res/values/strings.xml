@@ -24,6 +24,8 @@
     <string name="content_empty">必填内容不能为空</string>
     <string name="delete">删除</string>
     <string name="confirm_delete">确定删除该任务吗？</string>
+    <string name="need_execute_task">您有%d个任务需要执行</string>
+    <string name="no_permission">没有获取到相关权限，可能导致定位不准</string>
 
     <string-array name="task_types_arr">
         <item>上班</item>

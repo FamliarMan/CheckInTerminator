@@ -90,7 +90,7 @@ class TaskEditActivity : BaseActivity() {
         etName.setText(taskRecord!!.name)
         spType.setSelection(taskRecord!!.type)
         tvTime.text = taskRecord!!.startTime
-        tvWeek.text = DateUtil.getDayIntStr(taskRecord!!.week)
+        tvWeek.text = DateUtil.getDayStr(taskRecord!!.week)
         tvAddr.text = taskRecord!!.addr
         etRadius.setText(taskRecord!!.radius.toString())
     }
