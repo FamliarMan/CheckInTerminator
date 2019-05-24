@@ -1,6 +1,7 @@
 package com.jianglei.checkinterminator.util
 
 import com.jianglei.girlshow.storage.TaskRecord
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -19,11 +20,22 @@ class TaskUtils {
             finishCalendar.time = finishDate
             val nowCalendar = Calendar.getInstance()
             nowCalendar.time = now
+            val remindTime = SimpleDateFormat("HH:mm", Locale.getDefault()).parse(taskRecord.startTime)
+            val remindCalendar = Calendar.getInstance()
+            remindCalendar.time = remindTime
+            remindCalendar.set(Calendar.YEAR,nowCalendar[Calendar.YEAR])
+            remindCalendar.set(Calendar.MONTH,nowCalendar[Calendar.MONTH])
+            remindCalendar.set(Calendar.DAY_OF_YEAR,nowCalendar[Calendar.DAY_OF_YEAR])
+            SimpleDateFormat.getDateInstance()
             if (!isNeedRunToday(taskRecord)) {
                 return TaskRecord.STATUS_SKIP
             }
             if (nowCalendar.get(Calendar.DAY_OF_MONTH) - finishCalendar.get(Calendar.DAY_OF_MONTH) >= 1) {
-                //离上次任务完成已经过了至少一天
+                //离上次任务完成已经过了至少一天,所以今天需要提醒任务
+                if (remindCalendar.time.before(now)) {
+                    //已经超过了提醒时间
+                    return TaskRecord.STATUS_ACTIVIE
+                }
                 return TaskRecord.STATUS_READY
             } else {
                 return TaskRecord.STATUS_DONE

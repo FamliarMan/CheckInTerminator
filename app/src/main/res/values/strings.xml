@@ -4,6 +4,9 @@
     <string name="lng_lat">经度：%1$s,纬度：%2$s</string>
     <string name="start_time">%s开始提醒</string>
     <string name="already_done">已完成</string>
+    <string name="ready_remind">准备提醒</string>
+    <string name="reminding">提醒中</string>
+    <string name="finish_ahead_of_schedule">提前完成</string>
     <string name="skip">跳过今日</string>
     <string name="finish_task">完成任务</string>
     <string name="edit_required">必填</string>

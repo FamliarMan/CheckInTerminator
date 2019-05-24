@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import com.classic.adapter.BaseAdapterHelper
 import com.classic.adapter.CommonRecyclerAdapter
 import com.jianglei.checkinterminator.util.TaskUtils
@@ -61,18 +62,28 @@ class TaskListActivity : BaseActivity() {
             helper.setText(R.id.tvStartTime, item.startTime)
             val btnStatus = helper.getView<Button>(R.id.btnStatus)
             val taskStatus = TaskUtils.getTaskStatus(item)
+            val tvStatus = helper.getView<TextView>(R.id.tvStatus)
             if (taskStatus == TaskRecord.STATUS_SKIP) {
-                btnStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
-                btnStatus.text = getString(R.string.skip)
+                tvStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
+                tvStatus.text = getString(R.string.skip)
+                btnStatus.visibility = View.GONE
             } else if (taskStatus == TaskRecord.STATUS_DONE) {
-                btnStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
-                btnStatus.text = getString(R.string.already_done)
+                tvStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_grey_button)
+                tvStatus.text = getString(R.string.already_done)
+                btnStatus.visibility = View.GONE
+            } else if (taskStatus == TaskRecord.STATUS_READY) {
+                tvStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_green_rec)
+                tvStatus.text = getString(R.string.ready_remind)
+                btnStatus.visibility = View.VISIBLE
+                btnStatus.text = getString(R.string.finish_ahead_of_schedule)
             } else {
-                btnStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_red_button)
+                tvStatus.background = ContextCompat.getDrawable(this@TaskListActivity, R.drawable.shape_red_button)
+                tvStatus.text = getString(R.string.reminding)
+                btnStatus.visibility = View.VISIBLE
                 btnStatus.text = getString(R.string.finish_task)
             }
             btnStatus.setOnClickListener {
-                if (taskStatus == TaskRecord.STATUS_READY) {
+                if (taskStatus == TaskRecord.STATUS_READY || taskStatus == TaskRecord.STATUS_ACTIVIE) {
                     item.lastDoneTime = System.currentTimeMillis()
                     model.updateTask(item)
                 }

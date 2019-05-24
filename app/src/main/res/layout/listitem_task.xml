@@ -7,12 +7,28 @@
 	<TextView android:layout_width="wrap_content"
 			  android:layout_height="wrap_content"
 			  android:id="@+id/tvName"
-			  tools:text="上班打卡"
+			  tools:text="上班打卡卡看卡开啊"
 			  android:layout_marginLeft="15dp"
 			  android:layout_marginTop="15dp"
 			  android:layout_marginStart="15dp"
+			  android:maxLines="1"
+			  android:ellipsize="end"
+			  android:maxWidth="160dp"
 			  android:textColor="@android:color/black"
 			  android:textSize="17sp"
+
+	/>
+	<TextView android:layout_width="wrap_content"
+			  android:layout_height="wrap_content"
+			  tools:text="未到提醒时间"
+			  android:id="@+id/tvStatus"
+			  android:layout_toRightOf="@+id/tvName"
+			  android:textSize="10dp"
+			  android:layout_marginTop="18dp"
+			  android:layout_marginLeft="5dp"
+			  android:padding="2dp"
+			  android:textColor="@color/white_ffffff"
+			  android:background="@drawable/shape_green_rec"
 
 	/>
 

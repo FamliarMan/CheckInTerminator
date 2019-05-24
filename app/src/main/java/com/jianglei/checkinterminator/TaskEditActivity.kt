@@ -90,7 +90,11 @@ class TaskEditActivity : BaseActivity() {
         etName.setText(taskRecord!!.name)
         spType.setSelection(taskRecord!!.type)
         tvTime.text = taskRecord!!.startTime
-        tvWeek.text = DateUtil.getDayStr(taskRecord!!.week)
+        tvWeek.text = if (taskRecord!!.week.isBlank()) {
+            ""
+        } else {
+            DateUtil.getDayStr(taskRecord!!.week)
+        }
         tvAddr.text = taskRecord!!.addr
         etRadius.setText(taskRecord!!.radius.toString())
     }
@@ -113,7 +117,12 @@ class TaskEditActivity : BaseActivity() {
         val dialog = TimePickerDialog(this, object : TimePickerDialog.OnTimeSetListener {
             @SuppressLint("SetTextI18n")
             override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-                tvTime.setText("$hourOfDay:$minute")
+                if(minute<10){
+
+                    tvTime.setText("$hourOfDay:0$minute")
+                }else{
+                    tvTime.setText("$hourOfDay:$minute")
+                }
             }
         }, 0, 0, true)
         dialog.show()

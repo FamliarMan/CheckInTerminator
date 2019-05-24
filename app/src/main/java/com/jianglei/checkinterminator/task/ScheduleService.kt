@@ -2,14 +2,9 @@ package com.jianglei.checkinterminator.task
 
 import android.app.*
 import android.app.Notification.VISIBILITY_PUBLIC
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.os.IBinder
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
@@ -18,18 +13,12 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.model.inner.Point
-import com.baidu.mapapi.synchronization.DisplayOptions
 import com.baidu.mapapi.utils.SpatialRelationUtil
-import com.jianglei.checkinterminator.MainActivity
 import com.jianglei.checkinterminator.R
 import com.jianglei.checkinterminator.TaskListActivity
 import com.jianglei.checkinterminator.TaskViewModel
 import com.jianglei.checkinterminator.util.TaskUtils
-import com.jianglei.girlshow.storage.DataStorage
 import com.jianglei.girlshow.storage.TaskRecord
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.notificationManager
 
 /**
  *@author longyi created on 19-4-30
@@ -41,8 +30,10 @@ class ScheduleService : Service() {
     private var mTasks: List<TaskRecord>? = null
     private var mNotification: Notification? = null
     private val NOTIFICATION_ID = 1
+    private var lastLatLng: LatLng? = null
+    private val mBinder: LocalBinder = LocalBinder(this)
     override fun onBind(intent: Intent?): IBinder? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return mBinder
     }
 
     override fun onCreate() {
@@ -50,9 +41,16 @@ class ScheduleService : Service() {
 //        mVibrator = val
         mapInit()
         taskViewModel = TaskViewModel()
+        queryNewRecords()
+    }
+
+    private fun queryNewRecords() {
         taskViewModel.getTasks().observeForever {
             mTasks = it
-
+            val readyRunningTaskNum = checkTask(mTasks!!)
+            if (readyRunningTaskNum != 0) {
+                updateNotication(readyRunningTaskNum)
+            }
         }
     }
 
@@ -88,10 +86,11 @@ class ScheduleService : Service() {
                 )
                 if (mTasks == null || mTasks!!.isEmpty()) {
                     //没有任何任务，直接停止服务
-                    Log.d("longyi","没有设置任何列表，停止监控服务")
+                    Log.d("longyi", "没有设置任何列表，停止监控服务")
                     stopSelf()
                 }
-                val readyRunningTaskNum = checkTask(mTasks!!, LatLng(location.latitude, location.longitude))
+                lastLatLng = LatLng(location.latitude, location.longitude)
+                val readyRunningTaskNum = checkTask(mTasks!!)
                 if (readyRunningTaskNum == 0) {
                     return
                 }
@@ -196,13 +195,16 @@ class ScheduleService : Service() {
     /**
      * 检查是否有任务需要执行
      */
-    private fun checkTask(tasks: List<TaskRecord>, curLatlng: LatLng): Int {
+    private fun checkTask(tasks: List<TaskRecord>): Int {
+        if (lastLatLng == null) {
+            return 0
+        }
         val checkInTasks = mutableListOf<TaskRecord>()
         val checkOutTasks = mutableListOf<TaskRecord>()
         for (task in tasks) {
             val taskStatus = TaskUtils.getTaskStatus(task)
-            if (taskStatus == TaskRecord.STATUS_READY) {
-                val isRange = isRange(task, curLatlng)
+            if (taskStatus == TaskRecord.STATUS_ACTIVIE) {
+                val isRange = isRange(task, lastLatLng!!)
                 if (isRange && task.type == TaskRecord.TYPE_CHECK_IN) {
                     //进入打卡范围
                     checkInTasks.add(task)

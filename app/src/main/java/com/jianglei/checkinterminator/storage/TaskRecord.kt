@@ -123,6 +123,7 @@ data class TaskRecord(
         //任务提醒时间还没到等待执行
         const val STATUS_READY = 2
         //任务激活中
-        const val STATUS_ACTIVIE = 3
+        const val
+                STATUS_ACTIVIE = 3
     }
 }
