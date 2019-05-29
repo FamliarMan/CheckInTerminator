@@ -2,11 +2,15 @@ package com.jianglei.checkinterminator
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -14,6 +18,9 @@ import android.widget.Button
 import android.widget.TextView
 import com.classic.adapter.BaseAdapterHelper
 import com.classic.adapter.CommonRecyclerAdapter
+import com.jianglei.checkinterminator.task.LocalBinder
+import com.jianglei.checkinterminator.task.ScheduleService
+import com.jianglei.checkinterminator.task.ScheduleServiceModel
 import com.jianglei.checkinterminator.util.TaskUtils
 import com.jianglei.girlshow.storage.TaskRecord
 import kotlinx.android.synthetic.main.activity_task_list.*
@@ -22,6 +29,20 @@ import java.util.*
 class TaskListActivity : BaseActivity() {
     private lateinit var mTaskAdapter: TaskAdapter
     private lateinit var model: TaskViewModel
+    private var scheduleServiceModel: ScheduleServiceModel? = null
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            scheduleServiceModel = null
+            Log.d("longyi", "ScheduleService disconnected")
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            scheduleServiceModel = (service as LocalBinder).getRemoteService()
+            Log.d("longyi", "ScheduleService connected")
+
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +71,8 @@ class TaskListActivity : BaseActivity() {
                 }
             }
         })
+        val intent = Intent(this, ScheduleService::class.java)
+        bindService(intent, serviceConnection, 0)
     }
 
     inner class TaskAdapter(tasks: List<TaskRecord>?) :
@@ -86,6 +109,7 @@ class TaskListActivity : BaseActivity() {
                 if (taskStatus == TaskRecord.STATUS_READY || taskStatus == TaskRecord.STATUS_ACTIVIE) {
                     item.lastDoneTime = System.currentTimeMillis()
                     model.updateTask(item)
+                    scheduleServiceModel?.finishTask(item)
                 }
             }
         }
@@ -107,5 +131,10 @@ class TaskListActivity : BaseActivity() {
 
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(serviceConnection)
     }
 }

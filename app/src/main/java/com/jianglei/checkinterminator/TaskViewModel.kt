@@ -9,7 +9,7 @@ import org.jetbrains.anko.doAsync
 /**
  *@author longyi created on 19-5-10
  */
-class TaskViewModel : ViewModel() {
+open class TaskViewModel : ViewModel() {
     fun getTasks(): LiveData<List<TaskRecord>> {
         return DataStorage.db.taskDao().getAllTasks()
     }

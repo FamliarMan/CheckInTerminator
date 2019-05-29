@@ -4,6 +4,9 @@ import android.app.*
 import android.app.Notification.VISIBILITY_PUBLIC
 import android.content.Context
 import android.content.Intent
+import android.databinding.Observable
+import android.databinding.ObservableBoolean
+import android.databinding.ObservableField
 import android.os.*
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
@@ -13,11 +16,9 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.model.LatLng
-import com.baidu.mapapi.utils.SpatialRelationUtil
+import com.jianglei.checkinterminator.MyApplication
 import com.jianglei.checkinterminator.R
 import com.jianglei.checkinterminator.TaskListActivity
-import com.jianglei.checkinterminator.TaskViewModel
-import com.jianglei.checkinterminator.util.TaskUtils
 import com.jianglei.girlshow.storage.TaskRecord
 
 /**
@@ -26,13 +27,16 @@ import com.jianglei.girlshow.storage.TaskRecord
 class ScheduleService : Service() {
     private lateinit var mLocationClient: LocationClient
     private lateinit var mVibrator: Vibrator
-    private lateinit var taskViewModel: TaskViewModel
+    private lateinit var mModel: ScheduleServiceModel
     private var mTasks: List<TaskRecord>? = null
     private var mNotification: Notification? = null
     private val NOTIFICATION_ID = 1
     private var lastLatLng: LatLng? = null
-    private val mBinder: LocalBinder = LocalBinder(this)
+    private var mBinder: LocalBinder? = null
     override fun onBind(intent: Intent?): IBinder? {
+        if (mBinder == null) {
+            mBinder = LocalBinder(mModel)
+        }
         return mBinder
     }
 
@@ -40,18 +44,28 @@ class ScheduleService : Service() {
         super.onCreate()
 //        mVibrator = val
         mapInit()
-        taskViewModel = TaskViewModel()
-        queryNewRecords()
-    }
-
-    private fun queryNewRecords() {
-        taskViewModel.getTasks().observeForever {
-            mTasks = it
-            val readyRunningTaskNum = checkTask(mTasks!!)
-            if (readyRunningTaskNum != 0) {
-                updateNotication(readyRunningTaskNum)
+        mModel = ScheduleServiceModel(MyApplication.mApplication)
+        mVibrator = getSystemService(Service.VIBRATOR_SERVICE) as Vibrator
+        //监听通知标题改变
+        mModel.mNotificationTitle.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                if (sender == null) {
+                    return
+                }
+                updateNotication((sender as ObservableField<String>).get())
             }
-        }
+        })
+
+        mModel.mRemindSwitch.addOnPropertyChangedCallback(object:Observable.OnPropertyChangedCallback(){
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                if((sender as ObservableBoolean).get()){
+                    startVibrate()
+                }else{
+                    stopVibrate()
+                }
+            }
+        })
+        mModel.checkTask()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -79,22 +93,13 @@ class ScheduleService : Service() {
                 if (location == null) {
                     return
                 }
-
                 Log.d(
                     "longyi",
                     "lat:" + location.latitude + "  lon:" + location.longitude + " add:" + location.addrStr
                 )
-                if (mTasks == null || mTasks!!.isEmpty()) {
-                    //没有任何任务，直接停止服务
-                    Log.d("longyi", "没有设置任何列表，停止监控服务")
-                    stopSelf()
-                }
                 lastLatLng = LatLng(location.latitude, location.longitude)
-                val readyRunningTaskNum = checkTask(mTasks!!)
-                if (readyRunningTaskNum == 0) {
-                    return
-                }
-                updateNotication(readyRunningTaskNum)
+                mModel.mCurLatLng = lastLatLng
+                mModel.checkTask()
 
             }
         })
@@ -108,13 +113,13 @@ class ScheduleService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val vibrationEffect = VibrationEffect.createWaveform(
 
-                longArrayOf(1000, 10000, 1000, 10000),
+                longArrayOf(1000, 3000, 1000, 3000),
                 0
             )
             mVibrator.vibrate(vibrationEffect)
         } else {
             @Suppress("DEPRECATION")
-            mVibrator.vibrate(longArrayOf(1000, 10000, 1000, 10000), 0)
+            mVibrator.vibrate(longArrayOf(1000, 3000, 1000, 3000), 0)
         }
 
     }
@@ -125,7 +130,7 @@ class ScheduleService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-//        stopVibrate()
+        stopVibrate()
         mLocationClient.stop()
     }
 
@@ -167,54 +172,17 @@ class ScheduleService : Service() {
     }
 
     /**
-     * 更新通知栏，[needRunTaskCnt]是需要执行的任务数量
+     * 更新通知栏，[contentText]是通知栏显示的内容
      */
-    private fun updateNotication(needRunTaskCnt: Int) {
+    private fun updateNotication(contentText: String?) {
         if (mNotification == null) {
             return
         }
-        val text = if (needRunTaskCnt == 0) {
-            getText(R.string.watching)
-        } else {
-            getString(R.string.need_execute_task, needRunTaskCnt)
-        }
-        mNotification = createNotification(text.toString())
+        mNotification = createNotification(contentText)
         NotificationManagerCompat.from(applicationContext)
             .notify(NOTIFICATION_ID, mNotification!!)
 
     }
 
-    /**
-     * 判断当前位置是否在任务规定范围内
-     */
-    private fun isRange(task: TaskRecord, curLatlng: LatLng): Boolean {
-        val center = LatLng(task.Lat.toDouble(), task.Lng.toDouble())
-        return SpatialRelationUtil.isCircleContainsPoint(center, task.radius, curLatlng)
-    }
 
-    /**
-     * 检查是否有任务需要执行
-     */
-    private fun checkTask(tasks: List<TaskRecord>): Int {
-        if (lastLatLng == null) {
-            return 0
-        }
-        val checkInTasks = mutableListOf<TaskRecord>()
-        val checkOutTasks = mutableListOf<TaskRecord>()
-        for (task in tasks) {
-            val taskStatus = TaskUtils.getTaskStatus(task)
-            if (taskStatus == TaskRecord.STATUS_ACTIVIE) {
-                val isRange = isRange(task, lastLatLng!!)
-                if (isRange && task.type == TaskRecord.TYPE_CHECK_IN) {
-                    //进入打卡范围
-                    checkInTasks.add(task)
-                } else if (!isRange && task.type == TaskRecord.TYPE_CHECK_OUT) {
-                    //离开打卡范围
-                    checkOutTasks.add(task)
-                }
-
-            }
-        }
-        return checkInTasks.size + checkOutTasks.size
-    }
 }
