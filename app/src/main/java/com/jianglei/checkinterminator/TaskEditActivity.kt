@@ -122,15 +122,11 @@ class TaskEditActivity : BaseActivity() {
             hourOfDay = tmp[0].toInt()
             minute = tmp[1].toInt()
         }
-        val dialog = TimePickerDialog(this, object : TimePickerDialog.OnTimeSetListener {
-            @SuppressLint("SetTextI18n")
-            override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-                if (minute < 10) {
-
-                    tvTime.setText("$hourOfDay:0$minute")
-                } else {
-                    tvTime.setText("$hourOfDay:$minute")
-                }
+        val dialog = TimePickerDialog(this, TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+            if (minute < 10) {
+                tvTime.text = "$hourOfDay:0$minute"
+            } else {
+                tvTime.text = "$hourOfDay:$minute"
             }
         }, hourOfDay, minute, true)
         dialog.show()

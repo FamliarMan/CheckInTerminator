@@ -105,18 +105,28 @@ class LocationSelectActivity : BaseActivity() {
 
             }
         })
+        mapView.map.setOnMapLongClickListener {
+            val locData = MyLocationData.Builder()
+                .latitude(it.latitude)
+                .longitude(it.longitude)
+                .accuracy(50f)
+                .build()
+            mapView.map.setMyLocationData(locData)
+            lat = it.latitude
+            lng = it.longitude
+        }
 
         SmoothAtyOperator.startPermission(this)
             .addPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             .addPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
             .build()
-            .request(object:OnPermissionResultListener{
+            .request(object : OnPermissionResultListener {
                 override fun onGranted(permissions: Array<out String>?) {
                     mLocationClient.start()
                 }
 
                 override fun onDenied(permissions: Array<out String>?) {
-                    DialogUtils.showTipDialog(this@LocationSelectActivity,getString(R.string.no_permission))
+                    DialogUtils.showTipDialog(this@LocationSelectActivity, getString(R.string.no_permission))
                 }
             })
     }
