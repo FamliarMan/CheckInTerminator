@@ -2,6 +2,7 @@ package com.jianglei.checkinterminator.task
 
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
+import android.util.Log
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.utils.SpatialRelationUtil
 import com.jianglei.checkinterminator.MyApplication
@@ -20,6 +21,7 @@ class ScheduleServiceModel(val application: MyApplication) : TaskViewModel() {
      * 提醒开关
      */
     var mRemindSwitch: ObservableBoolean = ObservableBoolean(false)
+    var mServiceOn: ObservableBoolean = ObservableBoolean(true)
 
     /**
      * 开始提醒
@@ -70,9 +72,12 @@ class ScheduleServiceModel(val application: MyApplication) : TaskViewModel() {
         }
         getTasks().observeForever {
             var cnt = 0
+
+            val checkInTasks = mutableListOf<TaskRecord>()
+            val checkOutTasks = mutableListOf<TaskRecord>()
+            //保存达到提醒时间，但位置未达标的任务
+            val waitPositionTasks = mutableListOf<TaskRecord>()
             if (it != null) {
-                val checkInTasks = mutableListOf<TaskRecord>()
-                val checkOutTasks = mutableListOf<TaskRecord>()
                 for (task in it) {
                     val taskStatus = TaskUtils.getTaskStatus(task)
                     if (taskStatus == TaskRecord.STATUS_ACTIVIE) {
@@ -83,6 +88,8 @@ class ScheduleServiceModel(val application: MyApplication) : TaskViewModel() {
                         } else if (!isRange && task.type == TaskRecord.TYPE_CHECK_OUT) {
                             //离开打卡范围
                             checkOutTasks.add(task)
+                        } else {
+                            waitPositionTasks.add(task)
                         }
 
                     }
@@ -90,14 +97,19 @@ class ScheduleServiceModel(val application: MyApplication) : TaskViewModel() {
                 cnt = checkInTasks.size + checkOutTasks.size
             }
 
-            if(cnt != 0){
+            if (cnt != 0) {
                 val text = application.getString(R.string.need_execute_task, cnt)
                 mNotificationTitle.set(text)
                 startRemind()
-            }else{
+            } else {
                 val text = application.getString(R.string.watching)
                 mNotificationTitle.set(text)
                 stopRemind()
+                if (waitPositionTasks.isEmpty()) {
+                    //没有需要监控的任务
+                    mServiceOn.set(false)
+                    Log.d("longyi", "当前没有上班任务进入打卡范围或下班任务离开打开范围，停止服务")
+                }
             }
         }
     }

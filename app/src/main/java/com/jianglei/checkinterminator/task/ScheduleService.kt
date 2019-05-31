@@ -33,6 +33,7 @@ class ScheduleService : Service() {
     private val NOTIFICATION_ID = 1
     private var lastLatLng: LatLng? = null
     private var mBinder: LocalBinder? = null
+    private var isRunning = false
     override fun onBind(intent: Intent?): IBinder? {
         if (mBinder == null) {
             mBinder = LocalBinder(mModel)
@@ -56,12 +57,19 @@ class ScheduleService : Service() {
             }
         })
 
-        mModel.mRemindSwitch.addOnPropertyChangedCallback(object:Observable.OnPropertyChangedCallback(){
+        mModel.mRemindSwitch.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
             override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-                if((sender as ObservableBoolean).get()){
+                if ((sender as ObservableBoolean).get()) {
                     startVibrate()
-                }else{
+                } else {
                     stopVibrate()
+                }
+            }
+        })
+        mModel.mServiceOn.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                if (!(sender as ObservableBoolean).get()) {
+                    stopSelf()
                 }
             }
         })
@@ -69,7 +77,10 @@ class ScheduleService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startLocationService()
+        if (!isRunning) {
+            startLocationService()
+            isRunning = true
+        }
         return super.onStartCommand(intent, flags, startId)
     }
 

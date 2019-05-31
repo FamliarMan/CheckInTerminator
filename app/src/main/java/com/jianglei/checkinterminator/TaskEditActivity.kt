@@ -44,7 +44,6 @@ class TaskEditActivity : BaseActivity() {
         } else {
             isAdd = false
         }
-        fillUI()
         btnDelete.visibility = if (isAdd) {
             View.GONE
         } else {
@@ -82,6 +81,7 @@ class TaskEditActivity : BaseActivity() {
                 taskRecord!!.type = TaskRecord.TYPE_CHECK_IN
             }
         }
+        fillUI()
 
 
     }

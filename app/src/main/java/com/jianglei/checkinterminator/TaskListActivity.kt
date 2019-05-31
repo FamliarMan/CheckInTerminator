@@ -18,12 +18,14 @@ import android.widget.Button
 import android.widget.TextView
 import com.classic.adapter.BaseAdapterHelper
 import com.classic.adapter.CommonRecyclerAdapter
+import com.jianglei.checkinterminator.task.AlarmUtils
 import com.jianglei.checkinterminator.task.LocalBinder
 import com.jianglei.checkinterminator.task.ScheduleService
 import com.jianglei.checkinterminator.task.ScheduleServiceModel
 import com.jianglei.checkinterminator.util.TaskUtils
 import com.jianglei.girlshow.storage.TaskRecord
 import kotlinx.android.synthetic.main.activity_task_list.*
+import org.jetbrains.anko.alarmManager
 import java.util.*
 
 class TaskListActivity : BaseActivity() {
@@ -68,6 +70,8 @@ class TaskListActivity : BaseActivity() {
                     } else {
                         mTaskAdapter.replaceAll(t, true)
                     }
+                    //数据有更新，要重新设置定时提醒
+                    AlarmUtils.registryAlarm(application,t)
                 }
             }
         })
