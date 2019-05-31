@@ -21,6 +21,7 @@ import com.jianglei.checkinterminator.widget.DaySelectDialog
 import com.jianglei.girlshow.storage.DataStorage
 import com.jianglei.girlshow.storage.TaskRecord
 import kotlinx.android.synthetic.main.activity_task_edit.*
+import kotlin.math.min
 
 class TaskEditActivity : BaseActivity() {
     private var taskRecord: TaskRecord? = null
@@ -114,22 +115,29 @@ class TaskEditActivity : BaseActivity() {
     }
 
     private fun selectTime() {
+        var hourOfDay = 0
+        var minute = 0
+        if (!taskRecord!!.startTime.isBlank()) {
+            val tmp = taskRecord!!.startTime.split(":")
+            hourOfDay = tmp[0].toInt()
+            minute = tmp[1].toInt()
+        }
         val dialog = TimePickerDialog(this, object : TimePickerDialog.OnTimeSetListener {
             @SuppressLint("SetTextI18n")
             override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-                if(minute<10){
+                if (minute < 10) {
 
                     tvTime.setText("$hourOfDay:0$minute")
-                }else{
+                } else {
                     tvTime.setText("$hourOfDay:$minute")
                 }
             }
-        }, 0, 0, true)
+        }, hourOfDay, minute, true)
         dialog.show()
     }
 
     private fun selectDay() {
-        val dialog = DaySelectDialog()
+        val dialog = DaySelectDialog.newInstance(taskRecord!!.week)
         dialog.onDaySelectListener = object : DaySelectDialog.OnDaySelectListener {
 
             override fun onSelect(res: List<Int>) {

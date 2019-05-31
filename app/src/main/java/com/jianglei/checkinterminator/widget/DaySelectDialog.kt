@@ -19,6 +19,17 @@ import com.jianglei.checkinterminator.Selectable
  *@author longyi created on 19-5-13
  */
 class DaySelectDialog : DialogFragment() {
+
+    companion object {
+        fun newInstance(selectedDays: String): DaySelectDialog {
+            val bundle = Bundle()
+            bundle.putString("selectedDays", selectedDays)
+            val dialog = DaySelectDialog()
+            dialog.arguments = bundle
+            return dialog
+        }
+    }
+
     private val days = listOf(
         Selectable("星期天"),
         Selectable("星期一"),
@@ -28,6 +39,8 @@ class DaySelectDialog : DialogFragment() {
         Selectable("星期五"),
         Selectable("星期六")
     )
+    //类似于"1,3,7"
+    private var selectedDayStr: String? = null
 
     var onDaySelectListener: OnDaySelectListener? = null
 
@@ -35,6 +48,12 @@ class DaySelectDialog : DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.dialog_day_select, container, false)
         val rvContent = view.findViewById<RecyclerView>(R.id.rvContent)
+        if (arguments != null) {
+            selectedDayStr = arguments!!.getString("selectedDays")
+        }
+        selectedDayStr?.split(",")?.forEach {
+            days[it.toInt()-1].isSelect = true
+        }
         rvContent.layoutManager = LinearLayoutManager(context)
         rvContent.adapter =
             object : CommonRecyclerAdapter<Selectable<String>>(context!!, R.layout.listitem_day_select, days) {
